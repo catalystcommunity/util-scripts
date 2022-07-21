@@ -26,6 +26,9 @@ CWAGENT_CONFIG_CONTENTS=$(cat << 'EOF'
   },
   "metrics": {
     "aggregation_dimensions": [["InstanceId"]],
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
     "metrics_collected": {
       "cpu": {
         "measurement": [
