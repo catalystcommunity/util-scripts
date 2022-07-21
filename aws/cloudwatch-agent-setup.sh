@@ -26,6 +26,9 @@ CWAGENT_CONFIG_CONTENTS=$(cat << 'EOF'
   },
   "metrics": {
     "aggregation_dimensions": [["InstanceId"]],
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
     "metrics_collected": {
       "cpu": {
         "measurement": [
@@ -88,7 +91,7 @@ download_installer () {
         wget -O "${destination}" "${source}"
     else
         echo "ERROR: no suitable download utility. Install either wget or curl"
-        exit 2
+        exit 1
     fi
 }
 
@@ -101,8 +104,12 @@ install_by_os () {
     if ! [[ -x ${CWAGENT_BIN} ]]; then
         local os_name=$(grep "NAME=" /etc/os-release | awk -F '=' '{print $2}')
         case $os_name in
-            *CentOS* )
+            *CentOS*)
                 install_centos
+                ;;
+            *)
+                echo "ERROR: Unsupported operating system"
+                exit 1
                 ;;
         esac
     else
@@ -112,6 +119,7 @@ install_by_os () {
     # validate that the installed files exist
     if ! [[ -d ${CWAGENT_INSTALL_DIR} ]]; then
         echo "ERROR: /opt/aws/amazon-cloudwatch-agent directory does not exist after install, something went wrong"
+        exit 1
     fi
 
     # write config file
